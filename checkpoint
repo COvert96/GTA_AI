@@ -1,0 +1,2 @@
+model_checkpoint_path: "C:\\Users\\chris\\Dropbox\\MachineLearning\\pygta5-master\\pygta5-master\\pygta5-drivev0.1-0.001-googlenet-30-epochs.model"
+all_model_checkpoint_paths: "C:\\Users\\chris\\Dropbox\\MachineLearning\\pygta5-master\\pygta5-master\\pygta5-drivev0.1-0.001-googlenet-30-epochs.model"
