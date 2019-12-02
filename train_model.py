@@ -10,6 +10,8 @@ from models import inception_v3 as googlenet
 from random import shuffle
 from balance_data import find_split
 
+dirpath = os.path.dirname(os.path.realpath(__file__))
+
 file_index,train_data=find_split()
 
 # keys = np.sort(df[1].unique())

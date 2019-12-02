@@ -5,9 +5,13 @@ import pandas as pd
 from collections import Counter
 from random import shuffle
 from sklearn.preprocessing import LabelEncoder
+import os
 
 #FILE_I_END = 201
 
+dirpath = os.path.dirname(os.path.realpath(__file__))
+
+			
 def balance_data(FILE_I_END,gps):
 	training_data_full = []
 
@@ -15,11 +19,13 @@ def balance_data(FILE_I_END,gps):
 	
 	for count,i in enumerate(data_order):
 		if gps:
-			file_name = 'C:/Users/chris/Dropbox/MachineLearning/pygta5-master/pygta5-master/training_data_waypoint/training_data-{}.npy'.format(i)
+			file_name = 'training_data_waypoint\training_data-{}.npy'.format(i)
+			file_path = os.path.join(dirpath,file_name)
 		else:
-			file_name = 'C:/Users/chris/Dropbox/MachineLearning/pygta5-master/pygta5-master/training_data_freedrive/training_data-{}.npy'.format(i)
+			file_name = 'training_data_freedrive\training_data-{}.npy'.format(i)
+			file_path = os.path.join(dirpath,file_name)
 
-		train_data = np.load(file_name)
+		train_data = np.load(file_path)
 		for data in train_data:
 			training_data_full.append(data)
 	
@@ -108,9 +114,28 @@ def balance_data(FILE_I_END,gps):
 
 
 def find_split():
-	file_name = 'C:/Users/chris/Dropbox/MachineLearning/pygta5-master/pygta5-master/training_data_balanced/freedrive/training_data.npy'
-	# full file info
-	train_data = np.load(file_name)
+	while True:
+		try:
+			answer = input("Are you performing this function on waypoint data or freedrive data?")
+			answer = answer.lower()
+			if ('waypoint' in answer) or (answer == 'true'):
+				gps = True
+				break
+			elif ('freedrive' in answer) or (answer == 'false'):
+				gps = False
+				break
+			else:
+				print("Error: please enter 'waypoint/true' or 'freedrive/false'.")
+		except:
+			print("Error: please enter 'waypoint/true' or 'freedrive/false'.")
+	if gps:
+		file_name = 'training_data_waypoint\training_data-{}.npy'.format(i)
+		file_path = os.path.join(dirpath,file_name)
+	else:
+		file_name = 'training_data_freedrive\training_data-{}.npy'.format(i)
+		file_path = os.path.join(dirpath,file_name)
+
+	train_data = np.load(file_path)
 	df = pd.DataFrame(train_data)
 	valueindex = df[1].value_counts().index.tolist()
 	for i in valueindex[-13:]:

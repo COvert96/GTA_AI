@@ -10,6 +10,8 @@ import win32gui
 import ctypes
 import pandas as pd
 
+dirpath = os.path.dirname(os.path.realpath(__file__))
+
 # w = [1,0,0,0,0,0,0,0,0]
 # s = [0,1,0,0,0,0,0,0,0]
 # a = [0,0,1,0,0,0,0,0,0]
@@ -27,8 +29,10 @@ starting_value_waypoint = 1
 starting_value_fd = 1
 ctypes.windll.user32.SetProcessDPIAware()
 while True:
-	file_name_waypoint = 'C:/Users/chris/Dropbox/MachineLearning/pygta5-master/pygta5-master/training_data_waypoint/training_data-{}.npy'.format(starting_value_waypoint)
-	file_name_fd = 'C:/Users/chris/Dropbox/MachineLearning/pygta5-master/pygta5-master/training_data_freedrive/training_data-{}.npy'.format(starting_value_fd)
+	file_name_waypoint = 'training_data_waypoint/training_data-{}.npy'.format(starting_value_waypoint)
+	file_name_fd = 'training_data_freedrive/training_data-{}.npy'.format(starting_value_fd)
+	file_name_waypoint = os.path.join(dirpath,file_name_waypoint)
+	file_name_fd = os.path.join(dirpath,file_name_fd)
 	
 	if os.path.isfile(file_name_waypoint):
 		print('File exists, moving along',starting_value_waypoint)
@@ -54,50 +58,46 @@ while True:
 		break
 	
 
-def keys_to_output(keys):
-	'''
-	Convert keys to a ...multi-hot... array
-	 0  1  2  3  4   5   6   7    8
-	[W, S, A, D, H, WA, WD, WH, SA, SD, SH, HA, HD, NOKEY] boolean values.
-	'''
-	output = [0,0,0,0,0,0,0,0,0,0,0,0]
+# def keys_to_output(keys):
+	# '''
+	# Convert keys to a ...multi-hot... array
+	 # 0  1  2  3  4   5   6   7    8
+	# [W, S, A, D, H, WA, WD, WH, SA, SD, SH, HA, HD, NOKEY] boolean values.
+	# '''
+	# output = [0,0,0,0,0,0,0,0,0,0,0,0]
 
-	if 'W' in keys and 'A' in keys:
-		output = list(df['wa'])
-	elif 'W' in keys and 'D' in keys:
-		output = list(df['wd'])
-	elif 'S' in keys and 'A' in keys:
-		output = list(df['sa'])
-	elif 'S' in keys and 'D' in keys:
-		output = list(df['sd'])
-	elif ' ' in keys and 'A' in keys:
-		output = list(df['ha'])
-	elif ' ' in keys and 'D' in keys:
-		output = list(df['hd'])
-	elif ' ' in keys and 'S' in keys:
-		output = list(df['sh'])
-	elif ' ' in keys and 'W' in keys:
-		output = list(df['wa'])
-	elif 'W' in keys:
-		output = list(df['w'])
-	elif 'S' in keys:
-		output = list(df['s'])
-	elif 'A' in keys:
-		output = list(df['a'])
-	elif 'D' in keys:
-		output = list(df['d'])
-	elif ' ' in keys:
-		output = list(df['h'])
-	else:
-		output = output #no key pressed
-	return output
+	# if 'W' in keys and 'A' in keys:
+		# output = list(df['wa'])
+	# elif 'W' in keys and 'D' in keys:
+		# output = list(df['wd'])
+	# elif 'S' in keys and 'A' in keys:
+		# output = list(df['sa'])
+	# elif 'S' in keys and 'D' in keys:
+		# output = list(df['sd'])
+	# elif ' ' in keys and 'A' in keys:
+		# output = list(df['ha'])
+	# elif ' ' in keys and 'D' in keys:
+		# output = list(df['hd'])
+	# elif ' ' in keys and 'S' in keys:
+		# output = list(df['sh'])
+	# elif ' ' in keys and 'W' in keys:
+		# output = list(df['wa'])
+	# elif 'W' in keys:
+		# output = list(df['w'])
+	# elif 'S' in keys:
+		# output = list(df['s'])
+	# elif 'A' in keys:
+		# output = list(df['a'])
+	# elif 'D' in keys:
+		# output = list(df['d'])
+	# elif ' ' in keys:
+		# output = list(df['h'])
+	# else:
+		# output = output #no key pressed
+	# return output
 
 
 def main(file_name_waypoint,file_name_fd, starting_value_waypoint,starting_value_fd):
-	file_name_waypoint = file_name_waypoint
-	file_name_fd = file_name_fd
-	starting_value_waypoint = starting_value_waypoint
-	starting_value_fd = starting_value_fd
 	training_data = []
 	training_count = 0
 	training_data_fd = []
@@ -119,19 +119,19 @@ def main(file_name_waypoint,file_name_fd, starting_value_waypoint,starting_value
 	res = list(screen.shape)[:2]
 	map_screen = screen[round(res[0]-0.2*res[0]):res[0],0:round(res[0]-0.77*res[0])]
 	
-	# define the list of boundaries
+	# define the list of colour boundaries
 	boundary = ([140,0,200], [255,130,255])
 	lower = np.array(boundary[0],dtype='uint8')
 	upper = np.array(boundary[1],dtype='uint8')
+	gps = (True if np.sum(cv2.inRange(cv2.cvtColor(map_screen, cv2.COLOR_GRAY2RGB), lower, upper))>100 else False)
 
-	#last_time = time.time()
 	paused = False
-	gps = (True if np.sum(cv2.inRange(map_screen, lower, upper))>100 else False)
+
 	print('STARTING!!!')
 	while(True):
 
 		if not paused:
-			#last_time = time.time()
+			last_time = time.time()
 			#screen = np.array(ImageGrab.grab(bbox=bbox))
 			screen = grab_screen(region=bbox)
 			# keys = key_check()
@@ -140,7 +140,7 @@ def main(file_name_waypoint,file_name_fd, starting_value_waypoint,starting_value
 			# resize to something a bit more acceptable for a CNN
 			screen = cv2.resize(screen, (160,120))
 			# run a color convert:
-			screen = cv2.cvtColor(screen, cv2.COLOR_RGB2GRAY)
+			# screen = cv2.cvtColor(screen, cv2.COLOR_RGB2GRAY)
 
 
 			##            cv2.imshow('window',cv2.resize(screen,(640,360)))
@@ -158,7 +158,7 @@ def main(file_name_waypoint,file_name_fd, starting_value_waypoint,starting_value
 						print('SAVED GPS {}, Session total: {}'.format(starting_value_waypoint,training_count))
 						training_data = []
 						starting_value_waypoint += 1
-						file_name_waypoint = 'C:/Users/chris/Dropbox/MachineLearning/pygta5-master/pygta5-master/training_data_waypoint/training_data-{}.npy'.format(starting_value_waypoint)
+						file_name_waypoint = os.path.join(dirpath,'training_data_waypoint/training_data-{}.npy'.format(starting_value_waypoint))
 			else:
 				training_data_fd.append([screen,output])
 				training_count_fd += 1
@@ -170,29 +170,22 @@ def main(file_name_waypoint,file_name_fd, starting_value_waypoint,starting_value
 						print('SAVED FREEDRIVE {}, Session total: {}'.format(starting_value_fd,training_count_fd))
 						training_data_fd = []
 						starting_value_fd += 1
-						file_name_fd = 'C:/Users/chris/Dropbox/MachineLearning/pygta5-master/pygta5-master/training_data_freedrive/training_data-{}.npy'.format(starting_value_fd)
-			#print('loop took {} seconds'.format(time.time()-last_time))			
+						file_name_fd = os.path.join(dirpath,'training_data_freedrive/training_data-{}.npy'.format(starting_value_fd))
+			print('loop took {} seconds'.format(time.time()-last_time))			
 					
 		keys = key_check()
 
-		if 'B' in keys:
-			if paused:
-				if gps:
-					balance_data(starting_value_waypoint-1,gps)
-				else:
-					balance_data(starting_value_fd-1,gps)
-
-		if 'P' in keys:
+		if 'T' in keys:
 			if paused:
 				paused = False
 				print('unpaused!')
 				time.sleep(1)
 				screen = grab_screen(region=bbox)
 				map_screen = screen[round(res[0]-0.2*res[0]):res[0],0:round(res[0]-0.77*res[0])]
-				# find the colors within the specified boundaries and apply
-				# the mask
+				
+				# find the colors within the specified boundaries and return boolean
 				gps = (True if np.sum(cv2.inRange(map_screen, lower, upper))>100 else False)
-				print(gps)
+				
 			else:
 				print('Pausing!')
 				paused = True
